@@ -1,0 +1,74 @@
+#include <Arduino.h>
+#include <M5Stack.h>
+#include "SdFat.h"
+
+// Optional reduced SPI frequency for reading TFT
+// #define SPI_READ_FREQUENCY  16000000
+// https://github.com/m5stack/M5Stack/blob/6cd8ce15e723c2043a3c01763320413ebff300d5/src/utility/In_eSPI_Setup.h#L266
+
+// but in M5Stack.cpp original SD starts with 40 MHz ?!
+// SD.begin(TFCARD_CS_PIN, SPI, 40000000);
+// https://github.com/m5stack/M5Stack/blob/6cd8ce15e723c2043a3c01763320413ebff300d5/src/M5Stack.cpp#L27
+#define SPI_SPEED SD_SCK_MHZ(25)                                    //ArminPP 22.03 ##############  OK 4 10 20 25   too much: 29 30 40
+#define SD_CONFIG SdSpiConfig(TFCARD_CS_PIN, SHARED_SPI, SPI_SPEED) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
+// SdFat\src\SdFatConfig.h Line 100: #define ENABLE_DEDICATED_SPI 0
+
+SdFat32 sd; // for FAT16/FAT32
+File32 file;
+File32 root;
+
+void setup()
+{
+  Serial.begin(115200);
+  M5.begin();
+  M5.Lcd.textsize = 2;
+  M5.Lcd.println(F("sdFAT test with M5Stack"));
+  
+  delay(1000);
+  int fNameLength = 25;
+
+  //if (!sd.begin(TFCARD_CS_PIN, SPI_SPEED)) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
+  if (!sd.begin(SD_CONFIG)) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
+  {
+    sd.initErrorHalt(&Serial);
+  }
+
+  if (!root.open("/"))
+  {
+    Serial.println(F("dir.open failed"));
+  }
+
+  while (file.openNext(&root, O_RDONLY))
+  {
+    file.printFileSize(&Serial);
+    M5.Lcd.print(file.fileSize());
+    M5.Lcd.print(" ");
+    Serial.write(' ');
+    file.printModifyDateTime(&Serial);
+    Serial.write(' ');
+    M5.Lcd.print(" ");
+    file.printName(&Serial);
+    char f_name[fNameLength];
+    file.getName(f_name, fNameLength);
+    M5.Lcd.print(f_name);
+    if (file.isDir())
+    {
+      Serial.write('/');
+      M5.Lcd.print("/");
+    }
+    Serial.println();
+    M5.Lcd.println();
+    file.close();
+  }
+  if (root.getError())
+  {
+    Serial.println(F("openNext failed"));
+  }
+  else
+  {
+    Serial.println(F("Done!"));
+    M5.Lcd.println(F("Done!"));
+  }
+}
+
+void loop() {}
