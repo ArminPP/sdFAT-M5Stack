@@ -14,7 +14,7 @@
 
 # About <a name = "about"></a>
 
-I wanted to use the sdFat library on the M5Stack because I need the long file names.
+I would like to use the sdFat library on the M5Stack because I need the long file names.
 <br>There were some unexpected issues (for me) that I want to document here.
 
 # Usage <a name="usage"></a>
