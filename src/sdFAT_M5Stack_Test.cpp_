@@ -2,7 +2,7 @@
 #include <M5Stack.h>
 #include "SdFat.h"
 
-// Optional reduced SPI frequency for reading TFT
+// Optional reduced SPI frequency for reading TFT 
 // #define SPI_READ_FREQUENCY  16000000
 // https://github.com/m5stack/M5Stack/blob/6cd8ce15e723c2043a3c01763320413ebff300d5/src/utility/In_eSPI_Setup.h#L266
 
