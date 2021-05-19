@@ -1,8 +1,8 @@
-<h1 align="center">sdFAT running on M5Stack</h1>
+<h1 align="center">sdFat running on M5Stack</h1>
 
 ---
 
-<p align="center"> how to use sdFAT library on M5Stack in short.
+<p align="center"> how to use sdFat library on M5Stack in short.
     <br> 
 </p>
 
@@ -14,19 +14,19 @@
 
 # About <a name = "about"></a>
 
-I wanted to use the sdFAT library on the M5Stack because I need the long file names.
-
-I succeeded in doing this after a few attempts, which I would like to document here.
+I would like to use the sdFat library on the M5Stack because I need the long file names.
+<br>There were some unexpected issues (for me) that I want to document here.
 
 # Usage <a name="usage"></a>
 
 The original SD library is integrated in the M5Stack library.
-The sdFAT library can be used in parallel if a few settings are made correctly.
+The sdFat library can be used in parallel if a few settings are made correctly.
 
 There are 3 files in the src folder, with Arduino IDE they have to be renamed from *.cpp to *.ino.
 
-- **sdFAT_M5Stack_test.cpp** <br>
+- **sdFAT_M5Stack_Test.cpp** <br>
   This is the first attempt to use the lib with M5Stack.
+  It shows the files and folders on the sd-card
 
 - **sdFAT_bench.cpp** <br>
   This is a benchmark with the new library.
@@ -34,7 +34,7 @@ There are 3 files in the src folder, with Arduino IDE they have to be renamed fr
 - **SD_bench.cpp** <br>
   This is a benchmark with the original library.
 <br><br>
-  <h3>pay attention in using sdFAT library</h3><br>
+  <h2>pay attention in using sdFat library:</h2><br>
 
 - the SPI bus on M5Stack is shared with the TFT<br>
   https://docs.m5stack.com/#/en/core/gray
@@ -44,21 +44,29 @@ There are 3 files in the src folder, with Arduino IDE they have to be renamed fr
   https://github.com/m5stack/M5Stack/blob/6cd8ce15e723c2043a3c01763320413ebff300d5/src/utility/In_eSPI_Setup.h#L266
 - max speed of SPI bus for SD card is 40 MHz<br>
   https://github.com/m5stack/M5Stack/blob/6cd8ce15e723c2043a3c01763320413ebff300d5/src/M5Stack.cpp#L27   
-- **the max speed of SPI with sdFAT library is 25 MHz, higher speed will cause errors**<br>
-  I don't know, why there are these speed issues, but the sdFAT library is at 16 MHz slightly faster then the original one. <br>
+- **the max speed of SPI with sdFat library is 25 MHz, higher speed will cause errors**<br>
+  I don't know, why there are these speed issues, but the sdFat library is at 16 MHz slightly faster then the original one. <br>
 The original code of the benchmark is located at:
 https://codebender.cc/example/SdFat/benchSD#benchSD.ino
 <br><br>
+
+
 ```cpp
 // in main file define the max SPI speed
-#define SPI_SPEED SD_SCK_MHZ(25)
+#define SPI_SPEED SD_SCK_MHZ(25)                                    // MHz: OK 4, 10, 20, 25   too much: 29, 30, 40,
+#define SD_CONFIG SdSpiConfig(TFCARD_CS_PIN, SHARED_SPI, SPI_SPEED) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
 
-if (!sd.begin(TFCARD_CS_PIN, SPI_SPEED))
-{}
+if (!sd.begin(SD_CONFIG)) {}
 ```
  
+```cpp
+// in file SdFat\src\SdFatConfig.h    at Line 100:
+#define ENABLE_DEDICATED_SPI 0
+```
+
+
 ```txt 
-sdFAT benchmark on M5Stack    
+sdFat benchmark on M5Stack    
 ##########################
 Type any character to start
 File size 5MB        
@@ -93,5 +101,5 @@ Done
 # Acknowledgements <a name = "acknowledgement"></a>
 
 - thanks to the makers of M5Stack, I like to have a nice all in one case in my projects :-)
-- thanks to Bill Greiman for the sdFAT library https://github.com/greiman/SdFat
+- thanks to Bill Greiman for the sdFat library https://github.com/greiman/SdFat
 

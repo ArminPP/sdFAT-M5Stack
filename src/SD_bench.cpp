@@ -1,19 +1,14 @@
 /*
-Benchmark for sdFAT and M5Stack
+Benchmark for SD and M5Stack
 
 borrowed from:
-https://codebender.cc/example/SdFat/benchSD#benchSD.ino
+SdFat\examples\examplesV1\#attic\benchSD\benchSD.ino
 
 ArminPP: adapted to get almost equal code for SD and sdFAT...
 
  */
 #include <Arduino.h>
 #include <M5Stack.h>
-#include "SdFat.h"
-
-#define SPI_SPEED SD_SCK_MHZ(16)                                    // 25 is max, 16 is default SD speed ?
-#define SD_CONFIG SdSpiConfig(TFCARD_CS_PIN, SHARED_SPI, SPI_SPEED) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
-// SdFat\src\SdFatConfig.h Line 100: #define ENABLE_DEDICATED_SPI 0
 
 #define FILE_SIZE_MB 5
 #define FILE_SIZE (1000000UL * FILE_SIZE_MB)
@@ -21,8 +16,7 @@ ArminPP: adapted to get almost equal code for SD and sdFAT...
 
 uint8_t buf[BUF_SIZE];
 
-SdFat32 sd; // for FAT16/FAT32
-File32 file;
+File file;
 
 //------------------------------------------------------------------------------
 void error(const char *s)
@@ -52,8 +46,8 @@ void loop()
   } while (Serial.available() && Serial.read() >= 0);
 
   // F() stores strings in flash to save RAM
-  Serial.println(F("sdFAT benchmark on M5Stack"));
-  Serial.println(F("##########################"));
+  Serial.println(F("SD benchmark on M5Stack"));
+  Serial.println(F("#######################"));
   Serial.println(F("Type any character to start"));
 
   while (!Serial.available())
@@ -61,16 +55,16 @@ void loop()
     yield();
   }
 
-  if (!sd.begin(SD_CONFIG)) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
+  if (!SD.begin(TFCARD_CS_PIN)) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
   {
-    sd.initErrorHalt(&Serial);
+    error("SD card init error");
   }
-  sd.remove("Benchmark sdFAT.dat");
+  SD.remove("/bench.dat");
   // open or create file - truncate existing file.
-  file = sd.open("Benchmark sdFAT.dat", O_RDWR | O_TRUNC | O_CREAT);
+  file = SD.open("/bench.dat", FILE_WRITE);
   if (!file)
   {
-    error("open failed");
+    error("open file to write failed");
   }
 
   // fill buf with known data
@@ -128,6 +122,11 @@ void loop()
   Serial.print(F(" usec\n\n"));
   Serial.println(F("Starting read test.  Please wait up to a minute"));
   // do read test
+  file = SD.open("/bench.dat", FILE_READ);
+  if (!file)
+  {
+    error("open file to read failed");
+  }
   file.seek(0);
   maxLatency = 0;
   minLatency = 99999;
@@ -169,5 +168,5 @@ void loop()
   Serial.print(F(" usec\n\n"));
   Serial.print(F("Done\n\n"));
   file.close();
-  sd.remove("Benchmark sdFAT.dat");
+  SD.remove("/bench.dat");
 }

@@ -1,3 +1,9 @@
+/*
+
+sdFat Test with M5Stack and TFT display (sharing one SPI bus)
+
+*/
+
 #include <Arduino.h>
 #include <M5Stack.h>
 #include "SdFat.h"
@@ -9,9 +15,10 @@
 // but in M5Stack.cpp original SD starts with 40 MHz ?!
 // SD.begin(TFCARD_CS_PIN, SPI, 40000000);
 // https://github.com/m5stack/M5Stack/blob/6cd8ce15e723c2043a3c01763320413ebff300d5/src/M5Stack.cpp#L27
-#define SPI_SPEED SD_SCK_MHZ(25)                                    //ArminPP 22.03 ##############  OK 4 10 20 25   too much: 29 30 40
+
+#define SPI_SPEED SD_SCK_MHZ(25)                                    // MHz: OK 4 10 20 25   too much: 29 30 40
 #define SD_CONFIG SdSpiConfig(TFCARD_CS_PIN, SHARED_SPI, SPI_SPEED) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
-// SdFat\src\SdFatConfig.h Line 100: #define ENABLE_DEDICATED_SPI 0
+//                                                                  ----> SdFat\src\SdFatConfig.h Line 100: #define ENABLE_DEDICATED_SPI 0
 
 SdFat32 sd; // for FAT16/FAT32
 File32 file;
@@ -23,12 +30,12 @@ void setup()
   M5.begin();
   M5.Lcd.textsize = 2;
   M5.Lcd.println(F("sdFAT test with M5Stack"));
-  
+  M5.Lcd.println(F(" "));
+  M5.Lcd.textsize = 1;
   delay(1000);
-  int fNameLength = 25;
+  int fNameLength = 25; // assumption that no file name is longer than 24 chars
 
-  //if (!sd.begin(TFCARD_CS_PIN, SPI_SPEED)) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
-  if (!sd.begin(SD_CONFIG)) // TFCARD_CS_PIN is defined in M5Stack Config.h (Pin 4)
+  if (!sd.begin(SD_CONFIG))
   {
     sd.initErrorHalt(&Serial);
   }
